@@ -1,0 +1,140 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: lootbay_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: web/package-lock.json
+
+    - name: Install Go dependencies
+      run: go mod download
+
+    - name: Install Node.js dependencies
+      run: |
+        cd web
+        npm ci
+
+    - name: Run Go tests
+      run: go test -v ./...
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_NAME: lootbay_test
+        REDIS_HOST: localhost
+        REDIS_PORT: 6379
+
+    - name: Run frontend tests
+      run: |
+        cd web
+        npm test -- --watchAll=false
+
+    - name: Build Go binaries
+      run: |
+        mkdir -p bin
+        go build -o bin/user-service ./cmd/user-service
+        go build -o bin/product-service ./cmd/product-service
+        go build -o bin/order-service ./cmd/order-service
+        go build -o bin/payment-service ./cmd/payment-service
+        go build -o bin/chat-service ./cmd/chat-service
+        go build -o bin/notification-service ./cmd/notification-service
+        go build -o bin/api-gateway ./cmd/api-gateway
+
+    - name: Build frontend
+      run: |
+        cd web
+        npm run build
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install Go linters
+      run: |
+        go install golang.org/x/lint/golint@latest
+        go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+    - name: Run Go linter
+      run: golangci-lint run
+
+    - name: Run frontend linter
+      run: |
+        cd web
+        npm run lint
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Run Go security check
+      run: |
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+        govulncheck ./...
+
+    - name: Run npm audit
+      run: |
+        cd web
+        npm audit --audit-level=moderate 

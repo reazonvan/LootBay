@@ -61,42 +61,42 @@ func (g *Gateway) initServices() {
 	g.services = map[string]*ServiceInfo{
 		"user-service": {
 			Name:    "user-service",
-			Host:    "localhost",
+			Host:    "user-service",
 			Port:    "8081",
 			Version: "v1",
 			Health:  "/health",
 		},
 		"product-service": {
 			Name:    "product-service",
-			Host:    "localhost",
+			Host:    "product-service",
 			Port:    "8082",
 			Version: "v1",
 			Health:  "/health",
 		},
 		"order-service": {
 			Name:    "order-service",
-			Host:    "localhost",
+			Host:    "order-service",
 			Port:    "8083",
 			Version: "v1",
 			Health:  "/health",
 		},
 		"payment-service": {
 			Name:    "payment-service",
-			Host:    "localhost",
+			Host:    "payment-service",
 			Port:    "8084",
 			Version: "v1",
 			Health:  "/health",
 		},
 		"chat-service": {
 			Name:    "chat-service",
-			Host:    "localhost",
+			Host:    "chat-service",
 			Port:    "8085",
 			Version: "v1",
 			Health:  "/health",
 		},
 		"notification-service": {
 			Name:    "notification-service",
-			Host:    "localhost",
+			Host:    "notification-service",
 			Port:    "8086",
 			Version: "v1",
 			Health:  "/health",
@@ -152,6 +152,17 @@ func (g *Gateway) setupRoutes() {
 			// User endpoints
 			protected.GET("/users/profile", g.proxyToService("user-service", "/users/profile"))
 			protected.PUT("/users/profile", g.proxyToService("user-service", "/users/profile"))
+
+			// Role endpoints (only for OWNER)
+			protected.GET("/roles", g.proxyToService("user-service", "/roles"))
+			protected.POST("/roles", g.proxyToService("user-service", "/roles"))
+			protected.GET("/roles/:id", g.proxyToService("user-service", "/roles/:id"))
+			protected.PUT("/roles/:id", g.proxyToService("user-service", "/roles/:id"))
+			protected.DELETE("/roles/:id", g.proxyToService("user-service", "/roles/:id"))
+			protected.GET("/roles/permissions", g.proxyToService("user-service", "/roles/permissions"))
+			protected.GET("/roles/users", g.proxyToService("user-service", "/roles/users"))
+			protected.POST("/roles/users/:userId/roles", g.proxyToService("user-service", "/roles/users/:userId/roles"))
+			protected.DELETE("/roles/users/:userId/roles", g.proxyToService("user-service", "/roles/users/:userId/roles"))
 
 			// Product endpoints
 			protected.POST("/products", g.proxyToService("product-service", "/products"))

@@ -13,10 +13,12 @@ import (
 
 // Claims представляет JWT claims
 type Claims struct {
-	UserID   uuid.UUID `json:"user_id"`
-	Email    string    `json:"email"`
-	Username string    `json:"username"`
-	IsSeller bool      `json:"is_seller"`
+	UserID      uuid.UUID `json:"user_id"`
+	Email       string    `json:"email"`
+	Username    string    `json:"username"`
+	IsSeller    bool      `json:"is_seller"`
+	Roles       []string  `json:"roles"`       // массив ролей пользователя
+	Permissions []string  `json:"permissions"` // массив разрешений пользователя
 	jwt.RegisteredClaims
 }
 
@@ -46,15 +48,15 @@ func NewJWTManager(cfg *config.JWTConfig, redisClient *redis.Client) *JWTManager
 }
 
 // GenerateTokenPair генерирует пару токенов
-func (m *JWTManager) GenerateTokenPair(userID uuid.UUID, email, username string, isSeller bool) (*TokenPair, error) {
+func (m *JWTManager) GenerateTokenPair(userID uuid.UUID, email, username string, isSeller bool, roles, permissions []string) (*TokenPair, error) {
 	accessTokenID := uuid.New().String()
-	accessToken, err := m.generateToken(userID, email, username, isSeller, m.accessTokenTTL, accessTokenID)
+	accessToken, err := m.generateToken(userID, email, username, isSeller, roles, permissions, m.accessTokenTTL, accessTokenID)
 	if err != nil {
 		return nil, err
 	}
 
 	refreshTokenID := uuid.New().String()
-	refreshToken, err := m.generateToken(userID, email, username, isSeller, m.refreshTokenTTL, refreshTokenID)
+	refreshToken, err := m.generateToken(userID, email, username, isSeller, roles, permissions, m.refreshTokenTTL, refreshTokenID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +69,14 @@ func (m *JWTManager) GenerateTokenPair(userID uuid.UUID, email, username string,
 }
 
 // generateToken генерирует JWT токен
-func (m *JWTManager) generateToken(userID uuid.UUID, email, username string, isSeller bool, ttl time.Duration, tokenID string) (string, error) {
+func (m *JWTManager) generateToken(userID uuid.UUID, email, username string, isSeller bool, roles, permissions []string, ttl time.Duration, tokenID string) (string, error) {
 	claims := &Claims{
-		UserID:   userID,
-		Email:    email,
-		Username: username,
-		IsSeller: isSeller,
+		UserID:      userID,
+		Email:       email,
+		Username:    username,
+		IsSeller:    isSeller,
+		Roles:       roles,
+		Permissions: permissions,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -178,7 +182,7 @@ func (m *JWTManager) RefreshTokenPair(refreshToken string) (*TokenPair, error) {
 	}
 
 	// Генерация новой пары токенов
-	return m.GenerateTokenPair(claims.UserID, claims.Email, claims.Username, claims.IsSeller)
+	return m.GenerateTokenPair(claims.UserID, claims.Email, claims.Username, claims.IsSeller, claims.Roles, claims.Permissions)
 }
 
 // GeneratePasswordResetToken генерирует токен для сброса пароля

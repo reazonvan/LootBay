@@ -35,6 +35,7 @@ type User struct {
 	Products []Product `gorm:"foreignKey:SellerID" json:"products,omitempty"`
 	Orders   []Order   `gorm:"foreignKey:BuyerID" json:"orders,omitempty"`
 	Reviews  []Review  `gorm:"foreignKey:ReviewerID" json:"reviews,omitempty"`
+	Roles    []Role    `gorm:"many2many:user_roles;" json:"roles,omitempty"`
 }
 
 // Game представляет игру
@@ -261,4 +262,58 @@ type Message struct {
 	Conversation Conversation `gorm:"foreignKey:ConversationID" json:"conversation,omitempty"`
 	Sender       User         `gorm:"foreignKey:SenderID" json:"sender,omitempty"`
 	Receiver     User         `gorm:"foreignKey:ReceiverID" json:"receiver,omitempty"`
+}
+
+// Role представляет роль пользователя в системе
+type Role struct {
+	ID          uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Name        string    `gorm:"uniqueIndex;not null" json:"name"`
+	Description string    `json:"description"`
+	Level       int       `gorm:"not null;default:0" json:"level"` // 0 - USER, 50 - ADMIN, 100 - OWNER
+	IsSystem    bool      `gorm:"default:false" json:"is_system"`  // системная роль (нельзя удалить)
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+
+	// Relationships
+	Permissions []Permission `gorm:"many2many:role_permissions;" json:"permissions,omitempty"`
+	Users       []User       `gorm:"many2many:user_roles;" json:"users,omitempty"`
+}
+
+// Permission представляет разрешение в системе
+type Permission struct {
+	ID          uuid.UUID `gorm:"type:uuid;primary_key;default:gen_random_uuid()" json:"id"`
+	Name        string    `gorm:"uniqueIndex;not null" json:"name"`
+	Description string    `json:"description"`
+	Resource    string    `gorm:"not null" json:"resource"` // users, products, orders, etc.
+	Action      string    `gorm:"not null" json:"action"`   // create, read, update, delete, manage
+	IsSystem    bool      `gorm:"default:false" json:"is_system"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+
+	// Relationships
+	Roles []Role `gorm:"many2many:role_permissions;" json:"roles,omitempty"`
+}
+
+// RolePermission представляет связь между ролью и разрешением
+type RolePermission struct {
+	RoleID       uuid.UUID `gorm:"not null;index" json:"role_id"`
+	PermissionID uuid.UUID `gorm:"not null;index" json:"permission_id"`
+	CreatedAt    time.Time `json:"created_at"`
+
+	// Relationships
+	Role       Role       `gorm:"foreignKey:RoleID" json:"role,omitempty"`
+	Permission Permission `gorm:"foreignKey:PermissionID" json:"permission,omitempty"`
+}
+
+// UserRole представляет связь между пользователем и ролью
+type UserRole struct {
+	UserID     uuid.UUID  `gorm:"not null;index" json:"user_id"`
+	RoleID     uuid.UUID  `gorm:"not null;index" json:"role_id"`
+	AssignedBy *uuid.UUID `gorm:"index" json:"assigned_by"` // кто назначил роль
+	AssignedAt time.Time  `gorm:"not null" json:"assigned_at"`
+
+	// Relationships
+	User     User  `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	Role     Role  `gorm:"foreignKey:RoleID" json:"role,omitempty"`
+	Assigner *User `gorm:"foreignKey:AssignedBy" json:"assigner,omitempty"`
 }

@@ -13,6 +13,7 @@ import (
 var serviceMap = map[string]string{
 	"/api/v1/auth":          "http://user-service:8081",
 	"/api/v1/users":         "http://user-service:8081",
+	"/api/v1/roles":         "http://user-service:8081",
 	"/api/v1/config":        "http://user-service:8081",
 	"/api/v1/products":      "http://product-service:8082",
 	"/api/v1/orders":        "http://order-service:8083",

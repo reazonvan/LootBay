@@ -38,24 +38,27 @@ type UserService interface {
 
 // userService реализация сервиса пользователей
 type userService struct {
-	userRepo   repository.UserRepository
-	jwtManager *auth.JWTManager
-	redis      *redis.Client
-	logger     *logger.Logger
+	userRepo    repository.UserRepository
+	roleService RoleService
+	jwtManager  *auth.JWTManager
+	redis       *redis.Client
+	logger      *logger.Logger
 }
 
 // NewUserService создает новый сервис пользователей
 func NewUserService(
 	userRepo repository.UserRepository,
+	roleService RoleService,
 	jwtConfig *config.JWTConfig,
 	redis *redis.Client,
 	logger *logger.Logger,
 ) UserService {
 	return &userService{
-		userRepo:   userRepo,
-		jwtManager: auth.NewJWTManager(jwtConfig, redis),
-		redis:      redis,
-		logger:     logger,
+		userRepo:    userRepo,
+		roleService: roleService,
+		jwtManager:  auth.NewJWTManager(jwtConfig, redis),
+		redis:       redis,
+		logger:      logger,
 	}
 }
 
@@ -143,8 +146,23 @@ func (s *userService) Login(login, password string) (*models.User, *auth.TokenPa
 		return nil, nil, errors.New("USER_INACTIVE", "Пользователь заблокирован", 403, nil)
 	}
 
+	// Получаем роли пользователя
+	roles, err := s.roleService.GetUserRoleNames(user.ID)
+	if err != nil {
+		s.logger.Error("Failed to get user roles", "error", err, "user_id", user.ID)
+		// Если не удалось получить роли, назначаем базовую роль USER
+		roles = []string{"USER"}
+	}
+
+	// Получаем разрешения пользователя
+	permissions, err := s.roleService.GetUserPermissionNames(user.ID)
+	if err != nil {
+		s.logger.Error("Failed to get user permissions", "error", err, "user_id", user.ID)
+		permissions = []string{}
+	}
+
 	// Генерируем токены
-	tokens, err := s.jwtManager.GenerateTokenPair(user.ID, user.Email, user.Username, user.IsSeller)
+	tokens, err := s.jwtManager.GenerateTokenPair(user.ID, user.Email, user.Username, user.IsSeller, roles, permissions)
 	if err != nil {
 		return nil, nil, errors.Wrap(err)
 	}

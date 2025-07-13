@@ -59,24 +59,28 @@ func main() {
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":    "ok",
-			"timestamp": time.Now().Unix(),
-			"service":   "user-service",
-		})
+		c.JSON(http.StatusOK, gin.H{"message": "debug health endpoint works - роуты работают!"})
+	})
+
+	// Debug endpoint в корне
+	router.GET("/debug", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"message": "debug root endpoint works"})
 	})
 
 	// Инициализация репозиториев
 	userRepo := repository.NewUserRepository(db)
+	roleRepo := repository.NewRoleRepository(db)
 
 	// Инициализация сервисов
-	userService := service.NewUserService(userRepo, &cfg.JWT, redisClient, appLogger)
+	roleService := service.NewRoleService(roleRepo, userRepo, appLogger)
+	userService := service.NewUserService(userRepo, roleService, &cfg.JWT, redisClient, appLogger)
 
 	// Инициализация JWT менеджера
 	jwtManager := auth.NewJWTManager(&cfg.JWT, redisClient)
 
 	// Инициализация хендлеров
 	userHandler := api.NewUserHandler(userService, jwtManager, appLogger)
+	// roleHandler := api.NewRoleHandler(roleService, appLogger)
 
 	// API v1 routes
 	v1 := router.Group("/api/v1")
@@ -91,6 +95,19 @@ func main() {
 
 		// Конфигурация (например, политика паролей)
 		v1.GET("/config/password-policy", userHandler.PasswordPolicy)
+
+		// Debug: простой роут для проверки
+		v1.GET("/debug-test", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"message": "debug endpoint works"})
+		})
+
+		// Роли маршруты (только для OWNER)
+		v1.GET("/roles/test", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"message": "roles test endpoint works"})
+		})
+		v1.GET("/roles", func(c *gin.Context) {
+			c.JSON(http.StatusOK, gin.H{"message": "roles endpoint works"})
+		})
 
 		// Получение публичной информации о пользователе
 		v1.GET("/users/:id", userHandler.GetUser)
