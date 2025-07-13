@@ -1,0 +1,92 @@
+server:
+  host: "0.0.0.0"
+  port: "8080"
+  mode: "debug"  # debug, release
+  read_timeout: "10s"
+  write_timeout: "10s"
+  max_body_size: 33554432  # 32MB
+
+database:
+  host: "postgres" # docker service name
+  port: "5432"
+  user: "lootbay"
+  password: "password" # Должно совпадать с POSTGRES_PASSWORD в docker-compose.dev.yml
+  db_name: "lootbay" # Должно совпадать с POSTGRES_DB в docker-compose.dev.yml
+  ssl_mode: "disable"
+  max_open_conns: 25
+  max_idle_conns: 25
+  conn_max_lifetime: "5m"
+  auto_migrate: true
+
+redis:
+  host: "redis" # docker service name
+  port: "6379"
+  password: ""
+  db: 0
+  pool_size: 10
+  min_idle_conns: 5
+
+mongodb:
+  host: "mongodb" # docker service name
+  port: "27017"
+  user: "lootbay"
+  password: "lootbay_password"
+  db_name: "lootbay_chat"
+
+rabbitmq:
+  host: "rabbitmq" # docker service name
+  port: "5672"
+  user: "lootbay"
+  password: "lootbay_password"
+  vhost: "/"
+
+jwt:
+  secret_key: "your-super-secret-jwt-key-change-in-production"
+  access_token_ttl: "15m"
+  refresh_token_ttl: "168h"
+  password_reset_ttl: "1h"
+
+payment:
+  stripe:
+    public_key: "pk_test_your_stripe_public_key"
+    secret_key: "sk_test_your_stripe_secret_key"
+    webhook_key: "whsec_your_stripe_webhook_secret"
+  paypal:
+    client_id: "your_paypal_client_id"
+    client_secret: "your_paypal_client_secret"
+    mode: "sandbox"  # sandbox, live
+
+telegram:
+  bot_token: "your_telegram_bot_token"
+  webhook_url: "https://yourdomain.com/api/v1/telegram/webhook"
+  debug: false
+
+email:
+  provider: "sendgrid"  # sendgrid, smtp
+  api_key: "your_sendgrid_api_key"
+  from_email: "noreply@lootbay.com"
+  from_name: "LootBay"
+  smtp_host: "smtp.gmail.com"
+  smtp_port: 587
+  smtp_user: ""
+  smtp_pass: ""
+
+storage:
+  provider: "local"  # s3, minio, local
+  endpoint: "s3.amazonaws.com"
+  access_key_id: "your_access_key"
+  secret_access_key: "your_secret_key"
+  bucket_name: "lootbay-uploads"
+  region: "us-east-1"
+  use_ssl: true
+  local_path: "./uploads"
+
+monitoring:
+  prometheus:
+    enabled: true
+    port: "9090"
+    path: "/metrics"
+  jaeger:
+    enabled: false
+    endpoint: "http://localhost:14268/api/traces"
+    service_name: "lootbay" 

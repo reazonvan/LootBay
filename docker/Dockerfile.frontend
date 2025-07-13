@@ -1,0 +1,51 @@
+# Используем официальный образ Node.js
+FROM node:18-alpine AS base
+
+# Установка зависимостей только когда нужно
+FROM base AS deps
+# Проверяем https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Устанавливаем зависимости
+COPY web/package.json web/package-lock.json* ./
+RUN npm ci --only=production
+
+# Пересобираем исходный код только когда нужно
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY web/ .
+
+# Следующие переменные среды доступны во время сборки
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
+
+# Сборка приложения
+RUN npm run build
+
+# Производственный образ, копируем все файлы и запускаем next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Копируем публичные файлы
+COPY --from=builder /app/public ./public
+
+# Копируем собранное приложение
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["node", "server.js"] 

@@ -1,0 +1,35 @@
+# syntax=docker/dockerfile:1
+FROM golang:1.22-alpine AS builder
+
+WORKDIR /app
+
+# Копируем go mod файлы
+COPY go.mod go.sum ./
+
+# Скачиваем зависимости
+RUN go mod download
+
+# Копируем исходный код
+COPY . .
+
+# Собираем MCP сервер
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o mcp-server ./cmd/mcp-server
+
+# Финальный образ
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Копируем бинарный файл
+COPY --from=builder /app/mcp-server .
+
+# Открываем порт
+EXPOSE 8080
+
+# Запускаем MCP сервер
+COPY --from=builder /app/mcp-server /mcp-server
+
+# Запускаем MCP сервер (абсолютный путь)
+CMD ["/mcp-server"] 

@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lootbay_postgres_dev
+    environment:
+      POSTGRES_DB: lootbay
+      POSTGRES_USER: lootbay
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - lootbay_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: lootbay_redis_dev
+    ports:
+      - "6379:6379"
+    command: redis-server --save ""
+    networks:
+      - lootbay_network
+
+networks:
+  lootbay_network:
+    driver: bridge 

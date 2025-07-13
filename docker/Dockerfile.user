@@ -1,0 +1,38 @@
+# Build stage
+FROM golang:1.22-alpine AS builder
+
+# Установка зависимостей для сборки
+RUN apk add --no-cache git
+
+# Рабочая директория
+WORKDIR /app
+
+# Копирование go mod файлов
+COPY go.mod go.sum ./
+
+# Загрузка зависимостей
+RUN go mod download
+
+# Копирование исходного кода
+COPY . .
+
+# Сборка приложения
+RUN CGO_ENABLED=0 GOOS=linux go build -tags userservice -a -installsuffix cgo -o user-service ./cmd/user-service
+
+# Final stage
+FROM alpine:latest
+
+# Установка ca-certificates для HTTPS
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+# Копирование бинарного файла из builder stage
+COPY --from=builder /app/user-service .
+COPY --from=builder /app/config.yaml ./config.yaml
+
+# Порт сервиса
+EXPOSE 8081
+
+# Запуск приложения
+CMD ["./user-service"] 

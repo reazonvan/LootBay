@@ -1,0 +1,88 @@
+# Server Configuration
+SERVER_HOST=0.0.0.0
+SERVER_PORT=8080
+SERVER_MODE=debug
+SERVER_READ_TIMEOUT=10s
+SERVER_WRITE_TIMEOUT=10s
+SERVER_MAX_BODY_SIZE=33554432
+
+# Database Configuration
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=lootbay
+DATABASE_PASSWORD=your_secure_password_here
+DATABASE_NAME=lootbay
+DATABASE_SSL_MODE=disable
+DATABASE_MAX_OPEN_CONNS=25
+DATABASE_MAX_IDLE_CONNS=25
+DATABASE_CONN_MAX_LIFETIME=5m
+DATABASE_AUTO_MIGRATE=true
+
+# Redis Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
+REDIS_POOL_SIZE=10
+REDIS_MIN_IDLE_CONNS=5
+
+# MongoDB Configuration
+MONGODB_HOST=localhost
+MONGODB_PORT=27017
+MONGODB_USER=lootbay
+MONGODB_PASSWORD=your_mongodb_password_here
+MONGODB_DB_NAME=lootbay_chat
+
+# RabbitMQ Configuration
+RABBITMQ_HOST=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_USER=lootbay
+RABBITMQ_PASSWORD=your_rabbitmq_password_here
+RABBITMQ_VHOST=/
+
+# JWT Configuration
+JWT_SECRET_KEY=your_super_secret_jwt_key_change_in_production
+JWT_ACCESS_TOKEN_TTL=15m
+JWT_REFRESH_TOKEN_TTL=168h
+JWT_PASSWORD_RESET_TTL=1h
+
+# Payment Configuration
+STRIPE_PUBLIC_KEY=pk_test_your_stripe_public_key
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
+STRIPE_WEBHOOK_KEY=whsec_your_stripe_webhook_secret
+PAYPAL_CLIENT_ID=your_paypal_client_id
+PAYPAL_CLIENT_SECRET=your_paypal_client_secret
+PAYPAL_MODE=sandbox
+
+# Telegram Configuration
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_WEBHOOK_URL=https://yourdomain.com/api/v1/telegram/webhook
+TELEGRAM_DEBUG=false
+
+# Email Configuration
+EMAIL_PROVIDER=sendgrid
+SENDGRID_API_KEY=your_sendgrid_api_key
+EMAIL_FROM_EMAIL=noreply@lootbay.com
+EMAIL_FROM_NAME=LootBay
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+
+# Storage Configuration
+STORAGE_PROVIDER=local
+S3_ENDPOINT=s3.amazonaws.com
+S3_ACCESS_KEY_ID=your_access_key
+S3_SECRET_ACCESS_KEY=your_secret_key
+S3_BUCKET_NAME=lootbay-uploads
+S3_REGION=us-east-1
+S3_USE_SSL=true
+STORAGE_LOCAL_PATH=./uploads
+
+# Monitoring Configuration
+PROMETHEUS_ENABLED=true
+PROMETHEUS_PORT=9090
+PROMETHEUS_PATH=/metrics
+JAEGER_ENABLED=false
+JAEGER_ENDPOINT=http://localhost:14268/api/traces
+JAEGER_SERVICE_NAME=lootbay 

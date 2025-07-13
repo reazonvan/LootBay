@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "funpay-mcp": {
+      "url": "ws://localhost:8088/mcp",
+      "description": "MCP сервер для работы с FunPay проектом",
+      "capabilities": {
+        "tools": {
+          "listChanged": false
+        }
+      }
+    }
+  }
+} 
