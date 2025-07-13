@@ -24,7 +24,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build and push user-service
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./docker/Dockerfile.user
@@ -36,7 +36,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push product-service
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./docker/Dockerfile.product
@@ -48,7 +48,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push order-service
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./docker/Dockerfile.order
@@ -60,7 +60,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push payment-service
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./docker/Dockerfile.payment
@@ -72,7 +72,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push chat-service
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./docker/Dockerfile.chat
@@ -84,7 +84,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push notification-service
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./docker/Dockerfile.notification
@@ -96,7 +96,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push api-gateway
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         file: ./docker/Dockerfile.gateway
@@ -108,7 +108,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push frontend
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: ./web
         file: ./docker/Dockerfile.frontend
