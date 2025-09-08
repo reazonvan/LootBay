@@ -1,6 +1,6 @@
 module github.com/reazonvan/LootBay
 
-go 1.22.2
+go 1.24.0
 
 require (
 	github.com/gin-gonic/gin v1.9.1
@@ -17,7 +17,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.27.0
 	go.uber.org/zap v1.26.0
 	golang.org/x/crypto v0.17.0
-	golang.org/x/time v0.5.0
+	golang.org/x/time v0.13.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
 )
